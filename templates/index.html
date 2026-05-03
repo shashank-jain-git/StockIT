@@ -139,6 +139,51 @@
             border-width: 2px !important;
             box-shadow: 0 0 0 1px rgba(14, 165, 233, 0.2);
         }
+        /* Below is the style for the RSI gauge needle */
+        #rsiNeedle {
+            stroke: black;
+            stroke-width: 1.5;
+            stroke-linecap: round;
+            transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+
+        }
+        .gauge-wrapper {
+            position: relative;
+            width: 260px;
+            margin: auto;
+        }
+
+
+        /* Labels */
+        .gauge-label {
+            position: absolute;
+            font-size: 12px;
+            color: #374151;
+            font-weight: 500;
+        }
+
+        /* Adjust spacing away from arc */
+        .left { left: -70px; bottom: 10px; }
+        .left-mid { left: 20px; top: 25px; }
+        .top { left: 50%; transform: translateX(-50%); top: -10px; }
+        .right-mid { right: 20px; top: 25px; }
+        .right { right: -70px; bottom: 10px; }
+
+        .gauge-svg {
+            width: 260px;
+            height: 130px;
+            display: block;
+            margin: auto;
+
+
+        }
+
+        .gauge-title {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        
     </style>
 </head>
 <body class="min-h-screen animate-fade-in" data-theme="light">
@@ -248,6 +293,64 @@
                 
                 <div id="chart" class="chart-container card bg-base-100 shadow-md h-[50vh] p-1 mb-2"></div>
                 <div id="rsiChart" class="chart-container card bg-base-100 shadow-md h-[20vh] p-1"></div>
+                <!-- This is the container for the RSI signal display -->
+                 <div id="rsiSignalContainer" class="hidden card bg-base-100 shadow-md p-4 mt-2">
+
+                    <h3 class="gauge-title">RSI Signal</h3>
+
+                    <!-- Gauge -->
+                    <div class="gauge-wrapper">
+
+                        <!-- Labels -->
+                        <div class="gauge-label left">Strong Sell</div>
+                        <div class="gauge-label left-mid">Sell</div>
+                        <div class="gauge-label top">Neutral</div>
+                        <div class="gauge-label right-mid">Buy</div>
+                        <div class="gauge-label right">Strong Buy</div>
+
+                        <!-- SVG Gauge -->
+                        <svg viewBox="0 0 200 100" class="gauge-svg">
+
+                                <!-- 5 equal segments (36° each approx visually balanced) -->
+
+                                <!-- Strong Sell -->
+                                <path d="M10 100 A90 90 0 0 1 27.1884705062 47.0993272937" stroke="#dc2626" stroke-width="5" fill="none"/>
+
+                                <!-- Sell -->
+                                <path d="M27.1884705062 47.0993272937 A90 90 0 0 1 72.1884705063 14.4049135334" stroke="#f97316" stroke-width="5" fill="none"/>
+
+                                <!-- Neutral -->
+                                <path d="M72.1884705063 14.4049135334 A90 90 0 0 1 127.811529494 14.4049135334" stroke="#9ca3af" stroke-width="5" fill="none"/>
+
+                                <!-- Buy -->
+                                <path d="M127.811529494 14.4049135334 A90 90 0 0 1 172.811529494 47.0993272937" stroke="#22c55e" stroke-width="5" fill="none"/>
+
+                                <!-- Strong Buy -->
+                                <path d="M172.811529494 47.0993272937 A90 90 0 0 1 190 100" stroke="#16a34a" stroke-width="5" fill="none"/>
+
+                                <!-- NEEDLE -->
+                                <line id="rsiNeedle"
+                                x1="100" y1="100"
+                                x2="100" y2="20"
+                                stroke="black"
+                                stroke-width="5"
+                                stroke-linecap="round"
+                                transform="rotate(0 100 100)" />
+
+                                <!-- CENTER DOT -->
+                                <circle cx="100" cy="100" r="6" fill="black"/>
+
+                            </svg>
+
+                    </div>
+
+                    <!-- Label -->
+                    <div id="rsiSignalText"
+                        class="text-center mt-3 px-4 py-1 rounded-full text-white inline-block mx-auto">
+                        Neutral
+                    </div>
+
+                </div>
             </div>
         </div>
         

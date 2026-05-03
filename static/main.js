@@ -116,6 +116,15 @@ const rsiLine = rsiChart.addSeries(
 
 
 let autoUpdateInterval;
+// Below is a simple function to determine RSI signal based on standard thresholds which is not commited to the backend yet but can be used for frontend display or future enhancements. It returns a label and color for the RSI signal.
+
+function getRSISignal(rsi) {
+    if (rsi > 70) return { label: "Strong Sell", color: "#ef4444" };
+    if (rsi > 60) return { label: "Sell", color: "#f97316" };
+    if (rsi >= 40) return { label: "Neutral", color: "#9ca3af" };
+    if (rsi >= 30) return { label: "Buy", color: "#22c55e" };
+    return { label: "Strong Buy", color: "#16a34a" };
+}
 
 function fetchData(ticker, timeframe, emaPeriod) {
 
@@ -147,18 +156,46 @@ function fetchData(ticker, timeframe, emaPeriod) {
             } else {
                 emaLine.setData([]);
             }
+            // Below is a simple function to determine RSI and gauge display logic. It checks if RSI data is available and valid, then updates the RSI chart and gauge accordingly. It also calculates the latest RSI value to determine the signal and rotate the gauge needle.
 
-            if (data.rsi) {
+            if (data.rsi && data.rsi.length > 0) {
+
                 rsiLine.setData(data.rsi);
                 document.getElementById('rsiChart').style.display = 'block';
 
-                // 🔥 auto-fit RSI chart
                 rsiChart.timeScale().fitContent();
+
+                const validRSI = data.rsi.filter(p => p.value !== null);
+                const latestRSI = validRSI.length > 0 
+                    ? validRSI[validRSI.length - 1].value 
+                    : null;
+
+                if (latestRSI !== null && !isNaN(latestRSI)) {
+
+                    document.getElementById("rsiSignalContainer").classList.remove("hidden");
+
+                    const signal = getRSISignal(latestRSI);
+
+                    const text = document.getElementById("rsiSignalText");
+                    text.innerText = signal.label;
+                    text.style.backgroundColor = signal.color;
+
+                    const safeRSI = Math.max(0, Math.min(100, latestRSI));
+                    const angle = 90 - (safeRSI / 100) * 180;
+
+                    document.getElementById("rsiNeedle")
+                        .setAttribute("transform", `rotate(${angle} 100 100)`);
+                } else {
+                    // RSI exists but invalid → hide gauge only
+                    document.getElementById("rsiSignalContainer").classList.add("hidden");
+                }
+
             } else {
+                // RSI not selected → hide everything
                 rsiLine.setData([]);
                 document.getElementById('rsiChart').style.display = 'none';
+                document.getElementById("rsiSignalContainer").classList.add("hidden");
             }
-
         })
         .catch(error => {
             console.error('Error fetching data:', error);
