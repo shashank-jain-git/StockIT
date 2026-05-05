@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 import json
 import os
 from TickAnalyzer.ema_calculation import calculate_ema
+from TickAnalyzer.macd_calculation import calculate_macd
 from TickAnalyzer.rsi_calculation import rsi_calculation
 from models import db, Symbol
 
@@ -64,6 +65,23 @@ def fetch_yahoo_data(ticker, interval, ema_period=20, indicators=None):
             {
                 'time': int(row.Index.timestamp()),
                 'value': None if pd.isna(row.RSI) else float(row.RSI)
+            }
+            for row in data.itertuples()
+        ]
+    #  MACD Indicator (not Commited)
+    if 'macd' in indicators:
+        macd_line, signal_line, histogram = calculate_macd(data['Close'])
+
+        data['MACD'] = macd_line
+        data['SIGNAL'] = signal_line
+        data['HIST'] = histogram
+
+        indicators_data['macd'] = [
+            {
+                'time': int(row.Index.timestamp()),
+                'macd': float(row.MACD) if not pd.isna(row.MACD) else None,
+                'signal': float(row.SIGNAL) if not pd.isna(row.SIGNAL) else None,
+                'hist': float(row.HIST) if not pd.isna(row.HIST) else None
             }
             for row in data.itertuples()
         ]
