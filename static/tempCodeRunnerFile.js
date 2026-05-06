@@ -1,24 +1,376 @@
-let autoUpdateInterval;
+// Check if dark mode is active
+const isDarkMode = document.body.classList.contains('dark');
 
-// Fetch data function
-function fetchData(ticker, timeframe, emaPeriod, rsiPeriod) {
-    fetch(`/api/data/${ticker}/${timeframe}/${emaPeriod}/${rsiPeriod}`)
+// Initial chart setup with improved styling
+const chartOptions1 = {
+    layout: {
+        background: { type: 'solid', color: isDarkMode ? '#111827' : 'white' },
+        textColor: isDarkMode ? '#f3f4f6' : '#1f2937',
+        fontFamily: 'Inter, sans-serif',
+    },
+    grid: {
+        vertLines: {
+            color: isDarkMode ? 'rgba(55, 65, 81, 0.5)' : 'rgba(229, 231, 235, 0.8)',
+            style: 1, // Solid line style
+        },
+        horzLines: {
+            color: isDarkMode ? 'rgba(55, 65, 81, 0.5)' : 'rgba(229, 231, 235, 0.8)',
+            style: 1, // Solid line style
+        },
+    },
+    crosshair: {
+        mode: LightweightCharts.CrosshairMode.Normal,
+        vertLine: {
+            color: isDarkMode ? 'rgba(156, 163, 175, 0.5)' : 'rgba(75, 85, 99, 0.3)',
+            width: 1,
+            style: 2, // Dashed line
+        },
+        horzLine: {
+            color: isDarkMode ? 'rgba(156, 163, 175, 0.5)' : 'rgba(75, 85, 99, 0.3)',
+            width: 1,
+            style: 2, // Dashed line
+        },
+    },
+    timeScale: {
+        visible: true,
+        borderColor: isDarkMode ? '#374151' : '#e5e7eb',
+        timeVisible: true,
+        secondsVisible: false,
+    },
+    rightPriceScale: {
+        borderColor: isDarkMode ? '#374151' : '#e5e7eb',
+        scaleMargins: {
+            top: 0.1, 
+            bottom: 0.2,
+        },
+    },
+    
+};
+
+const chartOptions2 = {
+    layout: {
+        background: { type: 'solid', color: isDarkMode ? '#111827' : 'white' },
+        textColor: isDarkMode ? '#f3f4f6' : '#1f2937',
+        fontFamily: 'Inter, sans-serif',
+    },
+    grid: {
+        vertLines: {
+            color: isDarkMode ? 'rgba(55, 65, 81, 0.5)' : 'rgba(229, 231, 235, 0.8)',
+            style: 1,
+        },
+        horzLines: {
+            color: isDarkMode ? 'rgba(55, 65, 81, 0.5)' : 'rgba(229, 231, 235, 0.8)',
+            style: 1,
+        },
+    },
+    crosshair: {
+        mode: LightweightCharts.CrosshairMode.Normal,
+        vertLine: {
+            color: isDarkMode ? 'rgba(156, 163, 175, 0.5)' : 'rgba(75, 85, 99, 0.3)',
+            width: 1,
+            style: 2,
+        },
+        horzLine: {
+            color: isDarkMode ? 'rgba(156, 163, 175, 0.5)' : 'rgba(75, 85, 99, 0.3)',
+            width: 1,
+            style: 2,
+        },
+    },
+    timeScale: {
+        visible: true,
+        borderColor: isDarkMode ? '#374151' : '#e5e7eb',
+        timeVisible: true,
+        secondsVisible: false,
+    },
+    rightPriceScale: {
+        borderColor: isDarkMode ? '#374151' : '#e5e7eb',
+        scaleMargins: {
+            top: 0.1, 
+            bottom: 0.2,
+        },
+    },
+
+};
+
+const chartOptions3 = {
+    layout: {
+        background: { type: 'solid', color: isDarkMode ? '#111827' : 'white' },
+        textColor: isDarkMode ? '#f3f4f6' : '#1f2937',
+        fontFamily: 'Inter, sans-serif',
+    },
+    grid: {
+        vertLines: {
+            color: isDarkMode ? 'rgba(55, 65, 81, 0.5)' : 'rgba(229, 231, 235, 0.8)',
+            style: 1,
+        },
+        horzLines: {
+            color: isDarkMode ? 'rgba(55, 65, 81, 0.5)' : 'rgba(229, 231, 235, 0.8)',
+            style: 1,
+        },
+    },
+    crosshair: {
+        mode: LightweightCharts.CrosshairMode.Normal,
+        vertLine: {
+            color: isDarkMode ? 'rgba(156, 163, 175, 0.5)' : 'rgba(75, 85, 99, 0.3)',
+            width: 1,
+            style: 2,
+        },
+        horzLine: {
+            color: isDarkMode ? 'rgba(156, 163, 175, 0.5)' : 'rgba(75, 85, 99, 0.3)',
+            width: 1,
+            style: 2,
+        },
+    },
+    timeScale: {
+        visible: true,
+        borderColor: isDarkMode ? '#374151' : '#e5e7eb',
+        timeVisible: true,
+        secondsVisible: false,
+    },
+    rightPriceScale: {
+        borderColor: isDarkMode ? '#374151' : '#e5e7eb',
+        scaleMargins: {
+            top: 0.1, 
+            bottom: 0.2,
+        },
+    },
+
+};
+
+const chart = LightweightCharts.createChart(document.getElementById('chart'), chartOptions1);
+const candlestickSeries = chart.addSeries(
+    LightweightCharts.CandlestickSeries,
+    {
+      upColor: '#26a69a',
+      downColor: '#ef5350',
+      borderVisible: false,
+      wickUpColor: '#26a69a',
+      wickDownColor: '#ef5350',
+    }
+);
+const emaLine = chart.addSeries(
+    LightweightCharts.LineSeries,
+    { color: 'blue', lineWidth: 2 }
+);
+
+const rsiChart = LightweightCharts.createChart(document.getElementById('rsiChart'),chartOptions2);
+const rsiLine = rsiChart.addSeries(
+    LightweightCharts.LineSeries,
+    { color: 'red', lineWidth: 2}
+);
+
+const macdChart = LightweightCharts.createChart(
+    document.getElementById('macdChart'),
+    chartOptions3
+);
+
+const macdLine = macdChart.addSeries(
+    LightweightCharts.LineSeries,
+    { color: '#3b82f6', lineWidth: 2 }
+);
+
+const signalLine = macdChart.addSeries(
+    LightweightCharts.LineSeries,
+    { color: '#f59e0b', lineWidth: 2 }
+);
+
+const histSeries = macdChart.addSeries(
+    LightweightCharts.HistogramSeries,
+    {}
+);
+
+let autoUpdateInterval;
+// Below is a simple function to determine RSI signal based on standard thresholds which is not commited to the backend yet but can be used for frontend display or future enhancements. It returns a label and color for the RSI signal.
+
+function getRSISignal(rsi) {
+    if (rsi > 70) return { label: "Strong Sell", color: "#ef4444" };
+    if (rsi > 60) return { label: "Sell", color: "#f97316" };
+    if (rsi >= 40) return { label: "Neutral", color: "#9ca3af" };
+    if (rsi >= 30) return { label: "Buy", color: "#22c55e" };
+    return { label: "Strong Buy", color: "#16a34a" };
+}
+// Below is a simple function to determine MACD signal based on the difference between MACD and Signal line. It returns a label, color, and angle for the MACD signal which can be used for frontend display or future enhancements.
+function getMACDSignal(macd, signal) {
+
+    const diff = macd - signal;
+
+    if (diff > 1) return { label: "Strong Buy", color: "#16a34a", angle: 150 };
+    if (diff > 0) return { label: "Buy", color: "#22c55e", angle: 120 };
+    if (Math.abs(diff) < 0.05) return { label: "Neutral", color: "#9ca3af", angle: 90 };
+    if (diff < -1) return { label: "Strong Sell", color: "#dc2626", angle: 30 };
+
+    return { label: "Sell", color: "#f97316", angle: 60 };
+}
+
+function fetchData(ticker, timeframe, emaPeriod) {
+
+    let indicators = Array.from(
+        document.getElementById('indicators').selectedOptions
+    ).map(opt => opt.value);
+
+    if (indicators.length === 0) {
+        indicators = ['ema']; // fallback
+    }
+
+    indicators = indicators.join(',');
+
+    fetch(`/api/data/${ticker}/${timeframe}/${emaPeriod}?indicators=${indicators}`)
         .then(response => response.json())
         .then(data => {
-            candlestickSeries.setData(data.candlestick);
-            emaLine.setData(data.ema);
-            rsiLine.setData(data.rsi);
 
-            
+            console.log("API DATA:", data);
+
+            if (data.candlestick) {
+                candlestickSeries.setData(data.candlestick);
+
+                // 🔥 IMPORTANT: auto-fit chart
+                chart.timeScale().fitContent();
+            }
+
+            if (data.ema) {
+                emaLine.setData(data.ema);
+            } else {
+                emaLine.setData([]);
+            }
+            // Below is a simple function to determine RSI and gauge display logic. It checks if RSI data is available and valid, then updates the RSI chart and gauge accordingly. It also calculates the latest RSI value to determine the signal and rotate the gauge needle.
+
+            if (data.rsi && data.rsi.length > 0) {
+
+                // ✅ FIX: FILTER NULL VALUES FIRST
+                const filteredRSI = data.rsi
+                    .filter(d => d.value !== null && !isNaN(d.value));
+
+                if (filteredRSI.length > 0) {
+
+                    rsiLine.setData(filteredRSI);
+                    document.getElementById('rsiChart').style.display = 'block';
+                    rsiChart.timeScale().fitContent();
+
+                    // ✅ GET LATEST VALID RSI
+                    const latestRSI = filteredRSI[filteredRSI.length - 1].value;
+
+                    document.getElementById("rsiSignalContainer").classList.remove("hidden");
+
+                    const signal = getRSISignal(latestRSI);
+
+                    const text = document.getElementById("rsiSignalText");
+                    text.innerText = signal.label;
+                    text.style.backgroundColor = signal.color;
+
+                    const safeRSI = Math.max(0, Math.min(100, latestRSI));
+
+                    // ✅ FIXED ROTATION (RIGHT → LEFT)
+                    const angle = 90 - (safeRSI / 100) * 180;
+
+                    document.getElementById("rsiNeedle")
+                        .setAttribute("transform", `rotate(${angle} 100 100)`);
+
+                } else {
+                    // ❌ All values invalid → hide
+                    rsiLine.setData([]);
+                    document.getElementById('rsiChart').style.display = 'none';
+                    document.getElementById("rsiSignalContainer").classList.add("hidden");
+                }
+
+            } else {
+                // ❌ RSI not selected
+                rsiLine.setData([]);
+                document.getElementById('rsiChart').style.display = 'none';
+                document.getElementById("rsiSignalContainer").classList.add("hidden");
+            }
+            if (data.macd && data.macd.length > 0) {
+
+                // ✅ ONE FILTER FOR ALL
+                const cleanMacd = data.macd.filter(d =>
+                    d.macd !== null && !isNaN(d.macd) &&
+                    d.signal !== null && !isNaN(d.signal) &&
+                    d.hist !== null && !isNaN(d.hist)
+                );
+
+                if (cleanMacd.length > 0) {
+
+                    const macdData = cleanMacd.map(d => ({
+                        time: d.time,
+                        value: d.macd
+                    }));
+
+                    const signalData = cleanMacd.map(d => ({
+                        time: d.time,
+                        value: d.signal
+                    }));
+
+                    const histData = cleanMacd.map(d => ({
+                        time: d.time,
+                        value: d.hist,
+                        color: d.hist >= 0 ? '#10b981' : '#ef4444'
+                    }));
+
+                    macdLine.setData(macdData);
+                    signalLine.setData(signalData);
+                    histSeries.setData(histData);
+
+                    document.getElementById('macdChart').style.display = 'block';
+                    macdChart.timeScale().fitContent();
+                    // ✅ GET LAST VALUE
+                    const last = cleanMacd[cleanMacd.length - 1];
+
+                    if (last) {
+
+                        document.getElementById("macdSignalContainer").classList.remove("hidden");
+
+                        const signal = getMACDSignal(last.macd, last.signal);
+
+                        // text
+                        const text = document.getElementById("macdSignalText");
+                        text.innerText = signal.label;
+                        text.style.backgroundColor = signal.color;
+
+                        // needle
+                        document.getElementById("macdNeedle")
+                            .setAttribute("transform", `rotate(${signal.angle} 100 100)`);
+                    }
+
+                } else {
+                    macdLine.setData([]);
+                    signalLine.setData([]);
+                    histSeries.setData([]);
+                    document.getElementById('macdChart').style.display = 'none';
+                }
+
+            } else {
+                macdLine.setData([]);
+                signalLine.setData([]);
+                histSeries.setData([]);
+                document.getElementById('macdChart').style.display = 'none';
+                document.getElementById("macdSignalContainer").classList.add("hidden");
+            }
         })
         .catch(error => {
             console.error('Error fetching data:', error);
         });
 }
-
-// Fetch NVDA data on page load with default timeframe (daily), EMA period (20) and RSI period (14)
 window.addEventListener('load', () => {
-    fetchData('NVDA', '1d', 20, 14);
+
+    // 🔥 Resize charts properly
+    chart.resize(
+        document.getElementById('chart').clientWidth,
+        document.getElementById('chart').clientHeight
+    );
+
+    rsiChart.resize(
+        document.getElementById('rsiChart').clientWidth,
+        document.getElementById('rsiChart').clientHeight
+    );
+
+    macdChart.resize(
+        document.getElementById('macdChart').clientWidth,
+        document.getElementById('macdChart').clientHeight
+    );
+
+    // 🔥 Fetch initial data
+    fetchData('NVDA', '1d', 20);
+
+    // 🔥 Load watchlist
     loadWatchlist();
 });
 
@@ -27,8 +379,8 @@ document.getElementById('fetchData').addEventListener('click', () => {
     const ticker = document.getElementById('ticker').value;
     const timeframe = document.getElementById('timeframe').value;
     const emaPeriod = document.getElementById('emaPeriod').value;
-    const rsiPeriod = document.getElementById('rsiPeriod').value;
-    fetchData(ticker, timeframe, emaPeriod, rsiPeriod);
+    
+    fetchData(ticker, timeframe, emaPeriod);
 });
 
 // Handle auto-update functionality
@@ -39,8 +391,7 @@ document.getElementById('autoUpdate').addEventListener('change', (event) => {
             const ticker = document.getElementById('ticker').value;
             const timeframe = document.getElementById('timeframe').value;
             const emaPeriod = document.getElementById('emaPeriod').value;
-            const rsiPeriod = document.getElementById('rsiPeriod').value;
-            fetchData(ticker, timeframe, emaPeriod, rsiPeriod);
+            fetchData(ticker, timeframe, emaPeriod);
         }, frequency);
     } else {
         clearInterval(autoUpdateInterval);
@@ -266,7 +617,11 @@ function loadWatchlist() {
                     });
                     item.classList.add('border-primary', 'border');
                     
-                    fetchData(symbolData.symbol, document.getElementById('timeframe').value, document.getElementById('emaPeriod').value, document.getElementById('rsiPeriod').value);
+                    fetchData(
+                                symbolData.symbol,
+                                document.getElementById('timeframe').value,
+                                document.getElementById('emaPeriod').value
+                            );
                 });
                 
                 watchlistItems.appendChild(item);
@@ -305,16 +660,21 @@ function loadWatchlist() {
 // Sync visible logical range between charts
 function syncVisibleLogicalRange(chart1, chart2) {
     chart1.timeScale().subscribeVisibleLogicalRangeChange(timeRange => {
-        chart2.timeScale().setVisibleLogicalRange(timeRange);
+        if (timeRange && timeRange.from !== null && timeRange.to !== null) {
+            chart2.timeScale().setVisibleLogicalRange(timeRange);
+        }
     });
 
     chart2.timeScale().subscribeVisibleLogicalRangeChange(timeRange => {
-        chart1.timeScale().setVisibleLogicalRange(timeRange);
+        if (timeRange && timeRange.from !== null && timeRange.to !== null) {
+            chart1.timeScale().setVisibleLogicalRange(timeRange);
+        }
     });
 }
 
 
 syncVisibleLogicalRange(chart, rsiChart);
+syncVisibleLogicalRange(chart, macdChart);
 
 // Sync crosshair position between charts
 function getCrosshairDataPoint(series, param) {

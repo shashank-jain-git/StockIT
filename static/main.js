@@ -179,6 +179,16 @@ const histSeries = macdChart.addSeries(
     {}
 );
 
+const adxChart = LightweightCharts.createChart(
+    document.getElementById('adxChart'),
+    chartOptions3
+);
+
+const adxLine = adxChart.addSeries(
+    LightweightCharts.LineSeries,
+    { color: '#8b5cf6', lineWidth: 2 }
+);
+
 let autoUpdateInterval;
 // Below is a simple function to determine RSI signal based on standard thresholds which is not commited to the backend yet but can be used for frontend display or future enhancements. It returns a label and color for the RSI signal.
 
@@ -200,6 +210,14 @@ function getMACDSignal(macd, signal) {
     if (diff < -1) return { label: "Strong Sell", color: "#dc2626", angle: 30 };
 
     return { label: "Sell", color: "#f97316", angle: 60 };
+}
+// Below is a simple function to determine ADX signal based on standard thresholds. It returns a label, color, and angle for the ADX signal which can be used for frontend display or future enhancements.
+function getADXSignal(adx) {
+
+    if (adx > 50) return { label: "Strong Buy", color: "#16a34a", angle:162-90 };
+    if (adx > 25) return { label: "Buy", color: "#22c55e", angle: 126-90 };
+    if (adx < 25) return { label: "Neutral", color: "#E6E9E8", angle: 90-90 };
+    return { label: "No Trend", color: "#ef4444", angle: 45 };
 }
 
 function fetchData(ticker, timeframe, emaPeriod) {
@@ -344,7 +362,50 @@ function fetchData(ticker, timeframe, emaPeriod) {
                 document.getElementById('macdChart').style.display = 'none';
                 document.getElementById("macdSignalContainer").classList.add("hidden");
             }
-        })
+            if (data.adx && data.adx.length > 0) {
+
+                const cleanADX = data.adx.filter(d =>
+                    d.adx !== null && !isNaN(d.adx)
+                );
+
+                if (cleanADX.length > 0) {
+
+                    const adxData = cleanADX.map(d => ({
+                        time: d.time,
+                        value: d.adx
+                    }));
+
+                    adxLine.setData(adxData);
+                    document.getElementById('adxChart').style.display = 'block';
+                    adxChart.timeScale().fitContent();
+
+                    // 🔥 SIGNAL
+                    const last = cleanADX[cleanADX.length - 1];
+
+                    if (last) {
+                        document.getElementById("adxSignalContainer").classList.remove("hidden");
+
+                        const signal = getADXSignal(last.adx);
+
+                        const text = document.getElementById("adxSignalText");
+                        text.innerText = signal.label;
+                        text.style.backgroundColor = signal.color;
+
+                        document.getElementById("adxNeedle")
+                            .setAttribute("transform", `rotate(${signal.angle} 100 100)`);
+                    }
+
+                } else {
+                    adxLine.setData([]);
+                    document.getElementById('adxChart').style.display = 'none';
+                }
+
+            } else {
+                adxLine.setData([]);
+                document.getElementById('adxChart').style.display = 'none';
+                document.getElementById("adxSignalContainer").classList.add("hidden");
+            }
+                    })
         .catch(error => {
             console.error('Error fetching data:', error);
         });
@@ -365,6 +426,11 @@ window.addEventListener('load', () => {
     macdChart.resize(
         document.getElementById('macdChart').clientWidth,
         document.getElementById('macdChart').clientHeight
+    );
+
+    adxChart.resize(
+    document.getElementById('adxChart').clientWidth,
+    document.getElementById('adxChart').clientHeight
     );
 
     // 🔥 Fetch initial data
@@ -675,6 +741,7 @@ function syncVisibleLogicalRange(chart1, chart2) {
 
 syncVisibleLogicalRange(chart, rsiChart);
 syncVisibleLogicalRange(chart, macdChart);
+syncVisibleLogicalRange(chart, adxChart);
 
 // Sync crosshair position between charts
 function getCrosshairDataPoint(series, param) {
